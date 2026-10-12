@@ -1,41 +1,229 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# SiftNote
 
-## Expo has changed — do not trust your training data
+Android-first Expo / React Native notes app.
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+## Sources of Truth
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+- `overview/PRD.md` — product behavior and MVP scope
+- `overview/UI_REFERENCE/` — approved visual direction
+- `overview/DECISIONS.md` — established architecture
 
-## Commands
+The PRD wins if references conflict.
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+Core loop:
 
-```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
-```
+**Write → Highlight → Review**
 
-Run lint and typecheck before declaring any task done.
+Do not add features or redesign established UI unless requested.
 
-## Navigation & Routing
+## Engineering
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+Build the simplest correct implementation that satisfies the PRD.
 
-## Building with EAS
+Use current, supported, idiomatic Expo / React Native patterns.
 
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+Prefer:
 
-## Rules
+- direct, readable code
+- strict TypeScript
+- focused components
+- localized state
+- few dependencies
+- lightweight render and interaction paths
+- existing project patterns
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+Avoid:
+
+- unnecessary abstractions or layers
+- speculative architecture
+- unnecessary caching or memoization
+- unnecessary providers or global state
+- duplicated state
+- unnecessary effects
+- expensive work during render, typing, scrolling, or navigation
+- solving hypothetical future problems
+
+Keep persistent user data safe, but do not build elaborate recovery systems without a real requirement.
+
+Prefer removing complexity over adding infrastructure.
+
+## Code Organization
+
+Keep code conventionally organized and easy to read.
+
+- Keep components focused on clear responsibilities.
+- Keep render code declarative and easy to scan.
+- Move non-UI persistence/domain logic out of UI when practical.
+- Prefer named helpers over complex inline logic.
+- Extract components or hooks only when it improves clarity or reuse.
+- Do not split code merely to reduce file length.
+- Use the project's Prettier configuration.
+
+## Expo / Native
+
+Use installed versions and supported APIs.
+
+Prefer existing Expo capabilities before adding dependencies.
+
+Ask before:
+
+- adding a native dependency
+- changing native configuration that requires a new development build
+- rebuilding the development APK
+
+Never automatically run:
+
+- `expo prebuild`
+- `expo run:android`
+- native project generation
+- native rebuild commands
+- EAS builds
+
+Use Expo Router only.
+
+Routes belong in:
+
+`src/app/`
+
+## Android
+
+Android is the primary target.
+
+Use normal Android behavior for:
+
+- system Back
+- keyboard
+- focus
+- text selection
+- touch feedback
+- system bars
+- safe areas
+- scrolling
+- font/display scaling
+- accessibility
+- foreground/background lifecycle
+
+The user performs visual and interaction testing on a physical Android device.
+
+Do not claim visual correctness, smoothness, FPS, keyboard behavior, or native interaction quality unless actually observed.
+
+### Native UX
+
+Prefer native platform behavior and existing Expo / React Native primitives whenever practical.
+
+- Use native navigation transitions and lifecycle behavior.
+- Do not recreate native interactions with custom JavaScript animations when the platform already provides them.
+- User input should receive immediate native feedback.
+- Navigation should begin immediately when practical.
+- Do not unnecessarily block screen transitions on database work, parsing, editor setup, persistence, or other nonessential work.
+- Screens should appear as one coherent native transition.
+- Avoid headers, controls, editor content, or other major UI sections visibly appearing later than the rest of the screen.
+- Preserve native Back, keyboard, focus, selection, scrolling, touch feedback, and accessibility behavior.
+- Avoid artificial loading states, delays, animations, or skeletons used only to hide implementation latency.
+- Use custom interaction behavior only when required by the PRD or SiftNote's visual identity.
+
+For the existing WebView editor, make the native/WebView boundary as unnoticeable as practical.
+
+Do not repeatedly perform expensive editor initialization when existing valid runtime/state can be safely reused.
+
+## Performance
+
+Keep interaction-critical paths lightweight.
+
+Prioritize:
+
+1. note opening
+2. note creation
+3. Back navigation
+4. editor typing
+5. editor scrolling
+6. Notes/Highlights scrolling
+7. selection/highlighting
+8. startup
+
+User input should produce immediate feedback.
+
+Do not perform unnecessary work during:
+
+- render
+- navigation
+- note opening/creation
+- typing
+- scrolling
+- selection/highlighting
+
+Do not block interaction on work that can safely happen before, after, or concurrently with the native transition.
+
+Prefer removing unnecessary work over adding optimization infrastructure.
+
+Measure a real problem before adding:
+
+- caching
+- memoization
+- preloading
+- profiling infrastructure
+- performance-specific abstractions
+
+Persistent data remains the source of truth.
+
+## Validation
+
+For meaningful code changes run:
+
+`npx expo lint`
+
+`npx tsc --noEmit`
+
+Run tests only when they directly apply to changed behavior.
+
+Run:
+
+`npx expo-doctor`
+
+only when dependencies or Expo/native configuration change.
+
+Never claim a command or test was run if it was not.
+
+## Task Discipline
+
+Do only the work required for the current request.
+
+Do not create or update:
+
+- documentation
+- Markdown reports
+- audits
+- QA checklists
+- plans
+- progress logs
+- implementation summaries
+- architecture notes
+
+unless explicitly requested.
+
+Do not create files just to record what was done.
+
+Do not run broad or unrelated commands.
+
+Do not run:
+
+- dependency audits
+- exports
+- builds
+- EAS builds
+- prebuilds
+- native rebuilds
+- unrelated test suites
+- profiling/instrumentation
+
+unless the current task genuinely requires them or the user explicitly asks.
+
+Prefer modifying existing code over creating new abstractions, utilities, services, documentation, or infrastructure.
+
+Do not add dependencies, caches, services, managers, providers, helper layers, or performance systems merely because they may be useful later.
+
+Keep final reports brief.
+
+## Rule
+
+**Make SiftNote work well before making its architecture sophisticated.**

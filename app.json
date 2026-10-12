@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.siftnote.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -32,11 +33,23 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      ["expo-sqlite", { "enableFTS": false }],
+      [
+        "expo-image-picker",
+        { "cameraPermission": false, "microphonePermission": false }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e89b5884-4799-44a7-be3a-d46673030d56"
+      }
+    },
+    "owner": "rin-n-bot"
   }
 }

@@ -1,0 +1,5 @@
+node_modules
+.expo
+.test-build
+src/editor/generated
+dist
